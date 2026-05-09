@@ -1535,13 +1535,15 @@ async def _upload_inline_cache_item(
             try:
                 msg = await asyncio.wait_for(
                     context.bot.send_video(chat_id=chat_id, video=f, supports_streaming=True, **upload_kwargs),
-                    timeout=90,
+                    timeout=15,
                 )
+                logger.info("Inline-кэш загружен как video: %s", path.name)
                 return msg.video.file_id, "video"
             except Exception as e:
                 logger.warning("send_video для inline-кэша не удался (%s). Загружаю как документ.", e)
                 f.seek(0)
                 msg = await context.bot.send_document(chat_id=chat_id, document=f, **upload_kwargs)
+                logger.info("Inline-кэш загружен как document: %s", path.name)
                 return msg.document.file_id, "document"
         if kind == "audio":
             msg = await context.bot.send_audio(chat_id=chat_id, audio=f, title=path.stem, **upload_kwargs)

@@ -1752,7 +1752,7 @@ async def handle_inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE
             upload_chat_id=upload_chat_id,
         )
 
-        ready_entry = await _wait_for_inline_ready(key, timeout_seconds=15.0)
+        ready_entry = await _wait_for_inline_ready(key, timeout_seconds=10.0)
         if ready_entry:
             results = _build_inline_media_results(ready_entry)
             await inline_query.answer(results[:50], cache_time=0, is_personal=True)

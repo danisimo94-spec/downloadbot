@@ -900,7 +900,7 @@ def download_media_with_fallback(
     cookie_files = _cookie_files_for_site(site, preferred_user_id=preferred_user_id)
 
     attempts: list[str | None] = []
-    if TRY_NO_COOKIES_FIRST:
+    if TRY_NO_COOKIES_FIRST and not (site == "instagram" and cookie_files):
         attempts.append(None)
     attempts.extend(cookie_files)
 

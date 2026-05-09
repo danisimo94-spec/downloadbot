@@ -804,7 +804,14 @@ def _check_duration_limit(info: Any) -> None:
             )
 
 
-def _download_media_with_cookie(url: str, workdir: Path, *, cookiefile: str | None, site: str) -> dict[str, Any]:
+def _download_media_with_cookie(
+    url: str,
+    workdir: Path,
+    *,
+    cookiefile: str | None,
+    site: str,
+    normalize_files: bool = True,
+) -> dict[str, Any]:
     """Download url into workdir; return cache entry-like dict with files list."""
 
     outtmpl = str(workdir / "%(id)s_%(playlist_index)s.%(ext)s")
@@ -875,7 +882,8 @@ def _download_media_with_cookie(url: str, workdir: Path, *, cookiefile: str | No
             ", ".join(path.name for path in dropped_files),
         )
 
-    selected_files = _normalize_downloaded_files(selected_files)
+    if normalize_files:
+        selected_files = _normalize_downloaded_files(selected_files)
 
     title = None
     try:
@@ -895,6 +903,7 @@ def download_media_with_fallback(
     tmp_dir: Path,
     site: str,
     preferred_user_id: int | None = None,
+    normalize_files: bool = True,
 ) -> dict[str, Any]:
     """Try to download using no cookies (optional) and then multiple cookie files."""
     cookie_files = _cookie_files_for_site(site, preferred_user_id=preferred_user_id)
@@ -921,7 +930,13 @@ def download_media_with_fallback(
             logger.info(
                 f"[{site}] Попытка {idx}/{len(attempts)} скачать URL. cookies={'нет' if not cookiefile else cookiefile}"
             )
-            return _download_media_with_cookie(url, tmp_dir, cookiefile=cookiefile, site=site)
+            return _download_media_with_cookie(
+                url,
+                tmp_dir,
+                cookiefile=cookiefile,
+                site=site,
+                normalize_files=normalize_files,
+            )
         except DownloadError as e:
             last_err = e
             last_err_text = str(e)
@@ -1407,6 +1422,7 @@ async def _get_or_download_media_entry(
     url: str,
     *,
     requester_id: int | None,
+    normalize_files: bool = True,
 ) -> dict[str, Any]:
     site = _site_for_url(url)
     key = _cache_key(url)
@@ -1433,6 +1449,7 @@ async def _get_or_download_media_entry(
                 tmp_dir,
                 site,
                 requester_id,
+                normalize_files,
             )
 
             files = [Path(p) for p in result["files"]]
@@ -1588,7 +1605,11 @@ async def handle_inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
             return
 
-        entry = await _get_or_download_media_entry(video_url, requester_id=requester_id)
+        entry = await _get_or_download_media_entry(
+            video_url,
+            requester_id=requester_id,
+            normalize_files=False,
+        )
         if not upload_chat_id and not _entry_has_inline_file_ids(entry):
             await inline_query.answer(
                 [_inline_article(

@@ -1601,7 +1601,7 @@ def _build_inline_media_results(entry: dict[str, Any]) -> list[Any]:
         file_id = item.get("tg_file_id")
         if not file_id:
             continue
-            kind = item.get("inline_kind") or item.get("kind")
+        kind = item.get("inline_kind") or item.get("kind")
         result_id = f"{str(entry['key'])[:48]}_{i}"
         if kind == "photo":
             results.append(InlineQueryResultCachedPhoto(id=result_id, photo_file_id=file_id))
@@ -1687,11 +1687,7 @@ async def handle_inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     text = inline_query.query.strip()
     if not text:
-        await inline_query.answer(
-            [_inline_article("Вставь ссылку", "Напиши: @bot ссылка на Instagram, TikTok, YouTube, VK или Яндекс.Музыку")],
-            cache_time=1,
-            is_personal=True,
-        )
+        await inline_query.answer([], cache_time=1, is_personal=True)
         return
 
     upload_chat_id = INLINE_CACHE_CHAT_ID
@@ -1754,7 +1750,7 @@ async def handle_inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE
             upload_chat_id=upload_chat_id,
         )
 
-        ready_entry = await _wait_for_inline_ready(key, timeout_seconds=10.0)
+        ready_entry = await _wait_for_inline_ready(key, timeout_seconds=5.0)
         if ready_entry:
             results = _build_inline_media_results(ready_entry)
             await inline_query.answer(results[:50], cache_time=0, is_personal=True)

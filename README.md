@@ -91,17 +91,17 @@ TRY_NO_COOKIES_FIRST=1
 ## Запуск через Docker
 
 ```bash
-docker build -t telegram-bot .
-
-# Папки data и cookies желательно примонтировать:
 mkdir -p data cookies
+docker compose up -d --build
+docker compose ps
+docker logs -f downloadbot_enhanced_v2
+```
 
-docker run -d --name tg-bot \
-  --env-file .env \
-  -v $(pwd)/data:/app/data \
-  -v $(pwd)/cookies:/app/cookies \
-  --restart unless-stopped \
-  telegram-bot
+Обновление:
+
+```bash
+git pull
+docker compose up -d --build
 ```
 
 ---
